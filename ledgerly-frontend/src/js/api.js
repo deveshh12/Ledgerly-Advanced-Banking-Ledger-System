@@ -1,5 +1,4 @@
-// Change this one constant when deploying to a separately hosted API.
-export const API_BASE_URL = 'http://localhost:3000';
+export const API_BASE_URL = 'https://ledgerly-backend-etbv.onrender.com';
 
 async function request(path, options = {}) {
   try {
