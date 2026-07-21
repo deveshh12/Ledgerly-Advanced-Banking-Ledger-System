@@ -1,21 +1,13 @@
 const { Router } = require('express');
-const authMiddleware = require('../middleware/auth.middleware');
-const transactionController = require("../controllers/transaction.controller")
+const { authMiddleware } = require('../middleware/auth.middleware');
+const transactionController = require('../controllers/transaction.controller');
 
-const transactionRoutes = Router();
-
-/**
- * - POST /api/transactions/
- * - Create a new transaction
- */
-
-transactionRoutes.post("/", authMiddleware.authMiddleware, transactionController.createTransaction)
-
-
-/**
- * - POST /api/transactions/system/initial-funds
- * - Create initial funds transaction from system user
- */
-transactionRoutes.post("/system/initial-funds", authMiddleware.authSystemUserMiddleware, transactionController.createInitialFundsTransaction)
-
-module.exports = transactionRoutes;
+const router = Router();
+router.get('/balance', authMiddleware, transactionController.balance);
+router.get('/history', authMiddleware, transactionController.history);
+router.post('/deposit', authMiddleware, transactionController.deposit);
+router.post('/withdraw', authMiddleware, transactionController.withdraw);
+router.post('/transfer', authMiddleware, transactionController.transfer);
+// Kept for existing API clients; it uses the same documented transfer body.
+router.post('/', authMiddleware, transactionController.transfer);
+module.exports = router;

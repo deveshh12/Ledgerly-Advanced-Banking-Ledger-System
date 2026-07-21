@@ -2,6 +2,14 @@ const userModel = require("../models/user.model")
 const jwt = require("jsonwebtoken")
 const emailService = require("../services/email.service")
 const tokenBlackListModel = require("../models/blackList.model")
+const accountModel = require("../models/account.model")
+
+const cookieOptions = {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 3 * 24 * 60 * 60 * 1000
+}
 
 /**
 * - user register controller
@@ -21,24 +29,23 @@ async function userRegisterController(req, res) {
         })
     }
 
-    const user = await userModel.create({
-        email, password, name
-    })
+    if (!name?.trim() || !email?.trim() || !password) return res.status(400).json({ message: 'Name, email and password are required.' })
+    const user = await userModel.create({ email, password, name: name.trim() })
+    await accountModel.create({ user: user._id })
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
 
-    res.cookie("token", token)
+    res.cookie("token", token, cookieOptions)
 
     res.status(201).json({
         user: {
             _id: user._id,
             email: user.email,
             name: user.name
-        },
-        token
+        }
     })
 
-    await emailService.sendRegistrationEmail(user.email, user.name)
+    emailService.sendRegistrationEmail(user.email, user.name)
 }
 
 /**
@@ -49,7 +56,8 @@ async function userRegisterController(req, res) {
 async function userLoginController(req, res) {
     const { email, password } = req.body
 
-    const user = await userModel.findOne({ email }).select("+password")
+    if (!email?.trim() || !password) return res.status(400).json({ message: 'Email and password are required.' })
+    const user = await userModel.findOne({ email: email.trim().toLowerCase() }).select("+password")
 
     if (!user) {
         return res.status(401).json({
@@ -67,15 +75,14 @@ async function userLoginController(req, res) {
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
 
-    res.cookie("token", token)
+    res.cookie("token", token, cookieOptions)
 
     res.status(200).json({
         user: {
             _id: user._id,
             email: user.email,
             name: user.name
-        },
-        token
+        }
     })
 
 }
@@ -100,7 +107,7 @@ async function userLogoutController(req, res) {
         token: token
     })
 
-    res.clearCookie("token")
+    res.clearCookie("token", cookieOptions)
 
     res.status(200).json({
         message: "User logged out successfully"
