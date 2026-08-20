@@ -2,6 +2,9 @@
 .env
 .env.*
 !.env.example
+# Non-secret Vite build-mode config (just the public API base URL)
+!ledgerly-frontend/.env.development
+!ledgerly-frontend/.env.production
 
 # Dependencies and package-manager diagnostics
 node_modules/

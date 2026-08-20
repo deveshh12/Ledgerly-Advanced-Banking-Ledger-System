@@ -1,21 +1,21 @@
 # Ledgerly — Advanced Banking Ledger System
 
-Ledgerly is a cookie-authenticated banking ledger with an Express/MongoDB API and a responsive vanilla JavaScript + Tailwind dashboard. Balances are derived from immutable ledger entries rather than stored as mutable values.
+Ledgerly is a cookie-authenticated banking ledger with an Express/MongoDB API and a premium React + Tailwind dashboard. Balances are derived from immutable ledger entries rather than stored as mutable values.
 
 ## Features
 
 - HTTP-only JWT cookie authentication and bcrypt password hashing
-- Account creation during registration, deposit, withdrawal, and transfers
-- Idempotency UUIDs to prevent duplicate money movements
+- Multi-account management: create accounts, list them, and check per-account balances
+- Deposit, withdrawal, and transfer flows with idempotency UUIDs to prevent duplicate money movements
 - Complete balance and transaction-history endpoints
-- Responsive Ledgerly frontend with account-ID copying and transfer flow
+- Premium React dashboard covering the full API surface — accounts, transfers, and filterable transaction history
 
 ## Project structure
 
 ```text
 .
 ├── src/                  # Express API, MongoDB models, routes, controllers
-├── ledgerly-frontend/    # Static Express server and Tailwind frontend
+├── ledgerly-frontend/    # React + Vite + Tailwind dashboard
 ├── .env.example          # Backend environment template
 └── server.js             # Backend entry point
 ```
@@ -47,7 +47,7 @@ Ledgerly is a cookie-authenticated banking ledger with an Express/MongoDB API an
 
 4. Visit `http://localhost:4173`.
 
-For production CSS, run `npm run build` in `ledgerly-frontend` before `npm start`.
+For a production build, run `npm run build` in `ledgerly-frontend` (outputs to `dist/`), then `npm start` to preview it.
 
 ## Environment variables
 
@@ -66,10 +66,13 @@ For production CSS, run `npm run build` in `ledgerly-frontend` before `npm start
 | POST | `/api/auth/register` | Register user and create INR account |
 | POST | `/api/auth/login` | Start session |
 | POST | `/api/auth/logout` | End session |
-| GET | `/api/transactions/balance` | Derived account balance |
-| GET | `/api/transactions/history` | Ledger history |
-| POST | `/api/transactions/deposit` | Credit logged-in account |
-| POST | `/api/transactions/withdraw` | Debit logged-in account |
-| POST | `/api/transactions/transfer` | Transfer to recipient account ID |
+| POST | `/api/accounts/` | Create an additional account |
+| GET | `/api/accounts/` | List the logged-in user's accounts |
+| GET | `/api/accounts/balance/:accountId` | Balance for a specific account |
+| GET | `/api/transactions/balance` | Derived balance for the primary account |
+| GET | `/api/transactions/history` | Ledger history for the primary account |
+| POST | `/api/transactions/deposit` | Credit the primary account |
+| POST | `/api/transactions/withdraw` | Debit the primary account |
+| POST | `/api/transactions/transfer` | Transfer to any active recipient account ID |
 
 Money requests include a fresh client-generated UUID v4 `idempotencyKey`. Never commit `.env`; use `.env.example` as the configuration template.
